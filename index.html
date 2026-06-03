@@ -5,93 +5,211 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    overflow: hidden;
+font-family: "Segoe UI", Arial, sans-serif;
+background: #fff;
+display: flex;
+align-items: center;
+justify-content: center;
+min-height: 100vh;
+overflow: hidden;
 }
-.wrapper { width: 90%; max-width: 1400px; display: flex; align-items: center; justify-content: center; }
-.news { display: flex; align-items: center; gap: 30px; opacity: 1; transition: opacity 0.6s ease; width: 100%; }
+.wrapper {
+width: 90%;
+max-width: 1400px;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+.news {
+display: flex;
+align-items: center;
+gap: 30px;
+opacity: 1;
+transition: opacity 0.6s ease;
+width: 100%;
+}
 .news.fade { opacity: 0; }
-.left { flex-shrink: 0; width: 420px; display: flex; flex-direction: column; gap: 16px; }
-.logo { width: 100%; height: 60px; display: flex; align-items: center; justify-content: center; background: #fff; }
-.logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
-.img { width: 100%; height: 320px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 80px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-.img img { width:100%; height:100%; object-fit:cover; display:block; }
-.text { flex:1; min-width:0; padding-left: 10px; }
-.title { font-size: 32px; font-weight: 700; color: #1a1a1a; line-height: 1.3; margin-bottom: 20px; }
+.left {
+flex-shrink: 0;
+width: 420px;
+display: flex;
+flex-direction: column;
+gap: 16px;
+}
+.logo {
+width: 100%;
+height: 60px;
+display: flex;
+align-items: center;
+justify-content: center;
+background: #fff;
+}
+.logo img {
+max-width: 100%;
+max-height: 100%;
+object-fit: contain;
+}
+.img {
+width: 100%;
+height: 320px;
+border-radius: 12px;
+overflow: hidden;
+background: linear-gradient(135deg, #667eea, #764ba2);
+display: flex;
+align-items: center;
+justify-content: center;
+color: #fff;
+font-size: 80px;
+box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.img img {
+width:100%;
+height:100%;
+object-fit:cover;
+display:block;
+}
+.text {
+flex:1;
+min-width:0;
+padding-left: 10px;
+}
+.title {
+font-size: 32px;
+font-weight: 700;
+color: #1a1a1a;
+line-height: 1.3;
+margin-bottom: 20px;
+}
 .title a { color:inherit; text-decoration:none; }
 .title a:hover { color:#d32f2f; }
-.description { font-size: 20px; color: #555; line-height: 1.6; margin-bottom: 20px; }
-.date { font-size: 18px; color: #888; font-weight: 500; }
+.description {
+font-size: 20px;
+color: #555;
+line-height: 1.6;
+margin-bottom: 20px;
+}
+.date {
+font-size: 18px;
+color: #888;
+font-weight: 500;
+}
 .loader { text-align:center; padding:80px 0; color:#888; font-size:24px; }
 .err { text-align:center; padding:60px 20px; color:#d32f2f; font-size:20px; }
-@media (max-width: 1200px) { .left { width: 350px; } .img { height: 260px; } .title { font-size: 26px; } .description { font-size: 18px; } }
-@media (max-width: 900px) { .news { flex-direction: column; } .left { width:100%; max-width:600px; } .img { height: 300px; } .text { padding-left: 0; padding-top: 10px; } .title { font-size: 24px; } }
+@media (max-width: 1200px) {
+.left { width: 350px; }
+.img { height: 260px; }
+.title { font-size: 26px; }
+.description { font-size: 18px; }
+}
+@media (max-width: 900px) {
+.news { flex-direction: column; }
+.left { width:100%; max-width:600px; }
+.img { height: 300px; }
+.text { padding-left: 0; padding-top: 10px; }
+.title { font-size: 24px; }
+}
 </style>
 </head>
 <body>
 <div class="wrapper">
-    <div id="box"><div class="loader">Загрузка новостей...</div></div>
+<div id="box"><div class="loader">Загрузка новостей...</div></div>
 </div>
 <script>
-const RSS_URL = "http://inibroker.com/rss-feed-263557395681.xml";
+// Попробуем и http и https версию (некоторые прокси требуют https)
+const RSS_HTTPS = "https://inibroker.com/rss-feed-263557395681.xml";
+const RSS_HTTP  = "http://inibroker.com/rss-feed-263557395681.xml";
 const LOGO = "https://optim.tildacdn.com/tild3163-3431-4435-b830-363730373233/-/resize/343x/-/format/webp/isb_logo_rus.png.webp";
 
 let items = [];
 let idx = 0;
 let timer = null;
 
-// Ключевое: Jina Reader - почти всегда работает, даже с file://
-// Формат: https://r.jina.ai/http://example.com
-async function fetchRSS() {
-    const jinaUrl = `https://r.jina.ai/${RSS_URL}`;
-    
-    try {
-        console.log("Попытка через Jina Reader...");
-        const response = await fetch(jinaUrl, {
-            headers: {
-                'Accept': 'application/xml, text/xml, */*',
-                'X-Return-Format': 'text'
-            }
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const text = await response.text();
-        if (text && text.length > 100 && text.includes('<item>')) {
-            console.log("✅ Jina Reader сработал");
-            return text;
-        }
-        throw new Error("Jina вернул не XML");
-    } catch (e) {
-        console.warn("Jina Reader не сработал:", e);
-    }
-    
-    // Фоллбэк: пробуем allorigins (только если запущено через http://)
-    try {
-        const alloriginsUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(RSS_URL)}`;
-        const r = await fetch(alloriginsUrl);
-        const d = await r.json();
-        if (d && d.contents) {
-            console.log("✅ AllOrigins сработал");
-            return d.contents;
-        }
-    } catch (e) {
-        console.warn("AllOrigins не сработал:", e);
-    }
-    
-    throw new Error("Все прокси недоступны. Запустите файл через локальный сервер (python -m http.server 8000)");
+// Заголовки для обхода 403 (имитируем браузер)
+const FETCH_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7"
+};
+
+// Список всех CORS-прокси и RSS-сервисов
+function buildFetchers(url) {
+    return [
+        // 1. allorigins (get - возвращает JSON, часто стабильнее raw)
+        () => fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, { headers: FETCH_HEADERS })
+            .then(r => r.json())
+            .then(d => {
+                if (d && d.contents) return d.contents;
+                throw new Error("allorigins: пустой ответ");
+            }),
+
+        // 2. allorigins raw
+        () => fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, { headers: FETCH_HEADERS })
+            .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
+
+        // 3. corsproxy.io
+        () => fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { headers: FETCH_HEADERS })
+            .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
+
+        // 4. corsproxy.org
+        () => fetch(`https://corsproxy.org/?${encodeURIComponent(url)}`, { headers: FETCH_HEADERS })
+            .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
+
+        // 5. codetabs
+        () => fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`, { headers: FETCH_HEADERS })
+            .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
+
+        // 6. thingproxy
+        () => fetch(`https://thingproxy.freeboard.io/fetch/${url}`, { headers: FETCH_HEADERS })
+            .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
+
+        // 7. rss2json с попыткой увеличить count (вдруг сработает больше 10)
+        () => fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&count=1000`, { headers: FETCH_HEADERS })
+            .then(r => r.json())
+            .then(d => {
+                if (d.status === "ok" && d.items) {
+                    // Преобразуем в наш формат, чтобы парсер работал одинаково
+                    return d.items.map(i => `<item>
+                        <title><![CDATA[${i.title || ""}]]></title>
+                        <link>${i.link || ""}</link>
+                        <description><![CDATA[${i.description || i.content || ""}]]></description>
+                        <pubDate>${i.pubDate || ""}</pubDate>
+                        ${i.thumbnail ? `<enclosure url="${i.thumbnail}" type="image/jpeg"/>` : ""}
+                        ${i.enclosure && i.enclosure.link ? `<enclosure url="${i.enclosure.link}" type="image/jpeg"/>` : ""}
+                    </item>`).join("\n");
+                }
+                throw new Error("rss2json: статус не ok");
+            }),
+
+        // 8. feed2json.org
+        () => fetch(`https://feed2json.org/convert?url=${encodeURIComponent(url)}`, { headers: FETCH_HEADERS })
+            .then(r => r.json())
+            .then(d => {
+                if (d && d.items) {
+                    return d.items.map(i => `<item>
+                        <title><![CDATA[${i.title || ""}]]></title>
+                        <link>${i.url || i.link || ""}</link>
+                        <description><![CDATA[${i.content_html || i.content_text || i.summary || ""}]]></description>
+                        <pubDate>${i.date_published || ""}</pubDate>
+                    </item>`).join("\n");
+                }
+                throw new Error("feed2json: нет items");
+            })
+    ];
 }
 
 function parseRSS(xmlString) {
     const parser = new DOMParser();
-    const doc = parser.parseFromString(xmlString, "text/xml");
-    if (doc.querySelector("parsererror")) throw new Error("Ошибка парсинга XML");
+    const doc = parser.parseFromString(`<root>${xmlString}</root>`, "text/xml");
+    
+    const parseError = doc.querySelector("parsererror");
+    if (parseError) {
+        // Попробуем ещё раз — вдруг XML уже валидный
+        const doc2 = parser.parseFromString(xmlString, "text/xml");
+        if (doc2.querySelector("parsererror")) throw new Error("Ошибка парсинга XML");
+    }
     
     const result = [];
-    const entries = doc.querySelectorAll("item");
+    const entries = doc.querySelectorAll("item, entry");
     
     entries.forEach(entry => {
         const getText = (selector) => {
@@ -100,14 +218,25 @@ function parseRSS(xmlString) {
         };
         
         const title = getText("title");
-        const link = getText("link");
-        const description = getText("description");
-        const pubDate = getText("pubDate");
+        let link = getText("link");
+        if (!link) {
+            const linkEl = entry.querySelector("link");
+            if (linkEl) link = linkEl.getAttribute("href") || "";
+        }
+        
+        const description = getText("description") || getText("content") || getText("summary");
+        const pubDate = getText("pubDate") || getText("published") || getText("updated") || getText("dc\\:date");
         
         let image = null;
         const enclosure = entry.querySelector("enclosure");
         if (enclosure && enclosure.getAttribute("url")) {
             image = enclosure.getAttribute("url");
+        }
+        if (!image) {
+            const mediaContent = entry.querySelector("content, thumbnail");
+            if (mediaContent) {
+                image = mediaContent.getAttribute("url") || mediaContent.getAttribute("src");
+            }
         }
         if (!image) {
             const m = description.match(/<img[^>]+src=["']([^"']+)["']/i);
@@ -122,6 +251,35 @@ function parseRSS(xmlString) {
     return result;
 }
 
+// КЛЮЧЕВАЯ ФУНКЦИЯ: запускаем ВСЕ прокси параллельно, возвращаем первый успешный
+async function fetchRSS() {
+    const urls = [RSS_HTTPS, RSS_HTTP];
+    
+    // Формируем все возможные fetch-задачи
+    const tasks = [];
+    for (const url of urls) {
+        for (const fetcherFn of buildFetchers(url)) {
+            tasks.push(fetcherFn());
+        }
+    }
+    
+    console.log(`🚀 Запускаем ${tasks.length} параллельных запросов к прокси...`);
+    
+    try {
+        // Promise.any вернёт первый УСПЕШНЫЙ результат
+        const xmlString = await Promise.any(tasks);
+        if (!xmlString || typeof xmlString !== "string" || xmlString.length < 100) {
+            throw new Error("Пустой ответ от всех прокси");
+        }
+        return xmlString;
+    } catch (aggError) {
+        // Все прокси упали — собираем все ошибки
+        const errors = aggError.errors || [aggError];
+        console.error("❌ Все прокси не сработали:", errors);
+        throw new Error(`Все ${tasks.length} прокси-серверов недоступны. Подробности в консоли.`);
+    }
+}
+
 function smartTruncate(text, maxLength) {
     if (!text || text.length <= maxLength) return text;
     const punctIndex = Math.max(
@@ -129,9 +287,13 @@ function smartTruncate(text, maxLength) {
         text.lastIndexOf('!', maxLength),
         text.lastIndexOf('?', maxLength)
     );
-    if (punctIndex > maxLength * 0.6) return text.substring(0, punctIndex + 1);
+    if (punctIndex > maxLength * 0.6) {
+        return text.substring(0, punctIndex + 1);
+    }
     const spaceIndex = text.lastIndexOf(' ', maxLength);
-    if (spaceIndex > maxLength * 0.6) return text.substring(0, spaceIndex) + '...';
+    if (spaceIndex > maxLength * 0.6) {
+        return text.substring(0, spaceIndex) + '...';
+    }
     return text.substring(0, maxLength) + '...';
 }
 
@@ -154,9 +316,11 @@ function fmtDate(s) {
 function render() {
     if (!items.length) return;
     const it = items[idx];
+    
     const rawDesc = stripHtml(it.description || "");
     const desc = smartTruncate(rawDesc, 320);
-    const title = smartTruncate(it.title || "", 150);
+    const rawTitle = it.title || "";
+    const title = smartTruncate(rawTitle, 150);
     
     const box = document.getElementById("box");
     box.classList.add("fade");
@@ -188,7 +352,7 @@ async function load() {
         const xmlString = await fetchRSS();
         const allItems = parseRSS(xmlString);
         
-        if (!allItems.length) throw new Error("В RSS не найдено ни одной записи");
+        if (!allItems.length) throw new Error("В RSS-ленте не найдено ни одной записи");
         
         const TWO_YEARS_AGO = new Date();
         TWO_YEARS_AGO.setFullYear(TWO_YEARS_AGO.getFullYear() - 2);
@@ -197,11 +361,13 @@ async function load() {
             if (!i.pubDate) return true;
             const pubDate = new Date(i.pubDate);
             return !isNaN(pubDate.getTime()) && pubDate >= TWO_YEARS_AGO;
-        });
+        }).slice(0, 50);
         
-        if (!items.length) throw new Error(`Загружено ${allItems.length} записей, но все старше 2 лет`);
+        if (!items.length) {
+            throw new Error(`Загружено ${allItems.length} записей, но все старше 2 лет`);
+        }
         
-        console.log(`✅ Всего новостей: ${allItems.length}, после фильтра (2 года): ${items.length}`);
+        console.log(`✅ Спарсено ${allItems.length} новостей, после фильтра: ${items.length}`);
         
         idx = Math.floor(Math.random() * items.length);
         render();
