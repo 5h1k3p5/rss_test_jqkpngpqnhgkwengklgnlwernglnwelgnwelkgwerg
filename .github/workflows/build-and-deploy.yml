@@ -1,0 +1,108 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch RSS and create news.json
+        run: |
+          node -e '
+          const fs = require("fs");
+          const RSS = "http://inibroker.com/rss-feed-263557395681.xml";
+
+          async function main() {
+            console.log("Fetching RSS...");
+            const res = await fetch(RSS, {
+              headers: { "User-Agent": "Mozilla/5.0 GitHub Actions" }
+            });
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            const xml = await res.text();
+            console.log("RSS downloaded, length:", xml.length);
+
+            // Простой парсер на regex — работает без зависимостей
+            const items = [];
+            const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+            let match;
+            while ((match = itemRegex.exec(xml)) !== null) {
+              const block = match[1];
+              const get = (tag) => {
+                const m = block.match(new RegExp("<" + tag + ">([\\s\\S]*?)</" + tag + ">"));
+                return m ? m[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/, "$1").trim() : "";
+              };
+              const encMatch = block.match(/<enclosure[^>]+url=["\x27]([^"\x27]+)["\x27]/);
+              const imgMatch = (block.match(/<description>([\s\S]*?)<\/description>/) || [])[1];
+              const imgInDesc = imgMatch && imgMatch.match(/<img[^>]+src=["\x27]([^"\x27]+)["\x27]/);
+
+              items.push({
+                title: get("title"),
+                link: get("link"),
+                description: get("description"),
+                pubDate: get("pubDate"),
+                image: (encMatch && encMatch[1]) || (imgInDesc && imgInDesc[1]) || null
+              });
+            }
+            console.log("Parsed items:", items.length);
+
+            // Фильтр по 2 годам
+            const cutoff = new Date();
+            cutoff.setFullYear(cutoff.getFullYear() - 2);
+
+            const filtered = items.filter(i => {
+              if (!i.pubDate) return true;
+              const d = new Date(i.pubDate);
+              return !isNaN(d.getTime()) && d >= cutoff;
+            }).slice(0, 50);
+
+            console.log("After filter:", filtered.length);
+            fs.writeFileSync("news.json", JSON.stringify(filtered, null, 2));
+            console.log("news.json created");
+          }
+
+          main().catch(e => { console.error("ERROR:", e); process.exit(1); });
+          '
+
+      - name: Verify news.json
+        run: |
+          if [ ! -f news.json ]; then
+            echo "news.json was not created!"
+            exit 1
+          fi
+          echo "news.json contents (first 500 chars):"
+          head -c 500 news.json
+          echo ""
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
