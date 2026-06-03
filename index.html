@@ -98,7 +98,7 @@ async function load() {
         idx = Math.floor(Math.random() * items.length);
         render();
         if (timer) clearInterval(timer);
-        timer = setInterval(render, 10000);
+        timer = setInterval(render, 30000);
     } catch (e) {
         document.getElementById("box").innerHTML = `<div class="err">⚠️ ${e.message}</div>`;
     }
