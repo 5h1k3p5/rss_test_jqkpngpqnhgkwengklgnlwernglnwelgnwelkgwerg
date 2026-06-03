@@ -12,45 +12,65 @@ function extractImage(html) {
 }
 
 async function main() {
-    console.log(`Fetching RSS: ${RSS_URL}`);
-    const res = await fetch(RSS_URL);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    console.log('Fetching RSS from:', RSS_URL);
+    const res = await fetch(RSS_URL, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const xml = await res.text();
+    console.log('RSS downloaded, length:', xml.length);
 
+    // Профессиональный парсер XML
     const parser = new XMLParser({
         ignoreAttributes: false,
         attributeNamePrefix: '@_',
-        removeNSPrefix: true
+        textNodeName: '#text',
+        isArray: (name) => ['item'].includes(name) // Гарантируем, что item всегда массив
     });
-    const data = parser.parse(xml);
 
-    const channel = data.rss?.channel;
-    if (!channel) throw new Error('RSS не содержит channel');
+    const data = parser.parse(xml);
+    const channel = data?.rss?.channel;
+    
+    if (!channel) {
+        console.error('Invalid RSS structure');
+        throw new Error('RSS does not contain a channel');
+    }
 
     let items = channel.item || [];
-    if (!Array.isArray(items)) items = [items];
-    console.log(`Total items in RSS: ${items.length}`);
+    console.log('✅ Successfully parsed items:', items.length);
 
     const cutoff = new Date();
     cutoff.setFullYear(cutoff.getFullYear() - YEARS_BACK);
 
-    const news = items.map(i => ({
-        title: i.title || '',
-        link: i.link || '',
-        description: i.description || '',
-        pubDate: i.pubDate || '',
-        image: i.enclosure?.['@_url'] || extractImage(i.description)
-    })).filter(i => {
+    const news = items.map(i => {
+        // Безопасное извлечение текста (иногда парсер отдаёт объект, иногда строку)
+        let desc = typeof i.description === 'string' ? i.description : (i.description?.['#text'] || '');
+        let link = typeof i.link === 'string' ? i.link : (i.link?.['#text'] || '');
+        let title = typeof i.title === 'string' ? i.title : (i.title?.['#text'] || '');
+
+        return {
+            title: title,
+            link: link,
+            description: desc,
+            pubDate: i.pubDate || '',
+            image: (i.enclosure && i.enclosure['@_url']) || extractImage(desc)
+        };
+    }).filter(i => {
         if (!i.pubDate) return true;
         const d = new Date(i.pubDate);
         return !isNaN(d.getTime()) && d >= cutoff;
     }).slice(0, MAX_ITEMS);
 
+    console.log('After filter (last ' + YEARS_BACK + ' years):', news.length);
+    if (news.length === 0 && items.length > 0) {
+        console.log('WARNING: All items were filtered out! Sample pubDate:', items[0].pubDate);
+    }
+
     fs.writeFileSync('news.json', JSON.stringify(news, null, 2));
-    console.log(`✅ Saved ${news.length} items (filtered from ${items.length})`);
+    console.log('✅ news.json created successfully with', news.length, 'items.');
 }
 
 main().catch(e => {
-    console.error('❌', e);
+    console.error('❌ ERROR:', e);
     process.exit(1);
 });
