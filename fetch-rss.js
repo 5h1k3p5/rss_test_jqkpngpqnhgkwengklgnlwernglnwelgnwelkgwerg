@@ -1,7 +1,7 @@
 const { XMLParser } = require('fast-xml-parser');
 const fs = require('fs');
 
-const RSS_URL = 'http://inibroker.com/rss-feed-263557395681.xml';
+const RSS_URL = 'https://ria.ru/export/rss2/archive/index.xml';
 const MAX_ITEMS = 50;
 const YEARS_BACK = 2;
 
