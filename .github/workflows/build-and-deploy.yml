@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -43,7 +43,6 @@ jobs:
             const xml = await res.text();
             console.log("RSS downloaded, length:", xml.length);
 
-            // Простой парсер на regex — работает без зависимостей
             const items = [];
             const itemRegex = /<item>([\s\S]*?)<\/item>/g;
             let match;
@@ -67,7 +66,6 @@ jobs:
             }
             console.log("Parsed items:", items.length);
 
-            // Фильтр по 2 годам
             const cutoff = new Date();
             cutoff.setFullYear(cutoff.getFullYear() - 2);
 
@@ -99,10 +97,17 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: '.'
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
