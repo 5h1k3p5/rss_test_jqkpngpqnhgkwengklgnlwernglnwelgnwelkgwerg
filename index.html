@@ -2,6 +2,8 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Новости брокера</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
@@ -38,129 +40,11 @@ body {
     <div id="box"><div class="loader">Загрузка новостей...</div></div>
 </div>
 <script>
-const RSS_URL = "http://inibroker.com/rss-feed-263557395681.xml";
 const LOGO = "https://optim.tildacdn.com/tild3163-3431-4435-b830-363730373233/-/resize/343x/-/format/webp/isb_logo_rus.png.webp";
 
 let items = [];
 let idx = 0;
 let timer = null;
-
-// Все прокси, которые точно работают с GitHub Pages (отдают CORS-заголовки)
-const PROXIES = [
-    {
-        name: "Jina Reader",
-        url: (u) => `https://r.jina.ai/${u}`,
-        headers: { "X-Return-Format": "text", "Accept": "application/xml" },
-        parse: (r) => r.text()
-    },
-    {
-        name: "AllOrigins GET",
-        url: (u) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
-        headers: {},
-        parse: async (r) => { const d = await r.json(); return d.contents; }
-    },
-    {
-        name: "AllOrigins RAW",
-        url: (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-        headers: {},
-        parse: (r) => r.text()
-    },
-    {
-        name: "CorsProxy.io",
-        url: (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-        headers: {},
-        parse: (r) => r.text()
-    }
-];
-
-async function fetchRSS() {
-    const urls = [
-        RSS_URL.replace("http://", "https://"),
-        RSS_URL
-    ];
-    
-    const tasks = [];
-    for (const rssUrl of urls) {
-        for (const proxy of PROXIES) {
-            tasks.push({
-                name: `${proxy.name} [${rssUrl.substring(0, 30)}...]`,
-                promise: (async () => {
-                    const r = await fetch(proxy.url(rssUrl), { headers: proxy.headers });
-                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                    const text = await proxy.parse(r);
-                    if (!text || text.length < 200) throw new Error("Пустой ответ");
-                    if (!text.includes("<item") && !text.includes("<entry")) {
-                        throw new Error("Ответ не содержит RSS-элементов");
-                    }
-                    return text;
-                })()
-            });
-        }
-    }
-    
-    console.log(`🚀 Запускаем ${tasks.length} параллельных запросов...`);
-    
-    // Promise.any возвращает ПЕРВЫЙ успешный результат
-    try {
-        const xml = await Promise.any(tasks.map(t => t.promise));
-        return xml;
-    } catch (aggErr) {
-        const errors = aggErr.errors || [];
-        console.error("❌ Все прокси упали:");
-        errors.forEach((e, i) => console.error(`  ${i+1}.`, e.message));
-        throw new Error(`Все ${tasks.length} прокси недоступны (см. консоль)`);
-    }
-}
-
-function parseRSS(xmlString) {
-    // Оборачиваем в <root>, если XML-декларация мешает парсеру
-    let cleanXml = xmlString.trim();
-    if (!cleanXml.startsWith("<?xml")) {
-        cleanXml = `<root>${cleanXml}</root>`;
-    }
-    
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(cleanXml, "text/xml");
-    
-    if (doc.querySelector("parsererror")) {
-        // Пробуем без обёртки
-        const doc2 = parser.parseFromString(xmlString, "text/xml");
-        if (doc2.querySelector("parsererror")) throw new Error("Не удалось распарсить XML");
-    }
-    
-    const result = [];
-    const entries = doc.querySelectorAll("item, entry");
-    
-    entries.forEach(entry => {
-        const getText = (sel) => {
-            const el = entry.querySelector(sel);
-            return el ? (el.textContent || "").trim() : "";
-        };
-        
-        const title = getText("title");
-        let link = getText("link");
-        if (!link) {
-            const le = entry.querySelector("link");
-            if (le) link = le.getAttribute("href") || "";
-        }
-        const description = getText("description") || getText("content") || getText("summary");
-        const pubDate = getText("pubDate") || getText("published") || getText("updated") || getText("dc\\:date");
-        
-        let image = null;
-        const enc = entry.querySelector("enclosure");
-        if (enc && enc.getAttribute("url")) image = enc.getAttribute("url");
-        if (!image) {
-            const m = description.match(/<img[^>]+src=["']([^"']+)["']/i);
-            if (m) image = m[1];
-        }
-        
-        if (title || link) {
-            result.push({ title, link, description, pubDate, image });
-        }
-    });
-    
-    return result;
-}
 
 function smartTruncate(text, maxLength) {
     if (!text || text.length <= maxLength) return text;
@@ -196,18 +80,18 @@ function render() {
     const it = items[idx];
     const desc = smartTruncate(stripHtml(it.description || ""), 320);
     const title = smartTruncate(it.title || "", 150);
-    
+
     const box = document.getElementById("box");
     box.classList.add("fade");
-    
+
     setTimeout(() => {
         box.innerHTML = `
         <div class="news">
             <div class="left">
                 <div class="logo"><img src="${LOGO}" alt="Логотип"></div>
                 <div class="img">
-                    ${it.image 
-                        ? `<img src="${it.image}" onerror="this.style.display='none'; this.parentElement.innerHTML='📰';">` 
+                    ${it.image
+                        ? `<img src="${it.image}" onerror="this.style.display='none'; this.parentElement.innerHTML='📰';">`
                         : "📰"}
                 </div>
             </div>
@@ -224,29 +108,17 @@ function render() {
 
 async function load() {
     try {
-        const xmlString = await fetchRSS();
-        const allItems = parseRSS(xmlString);
-        
-        if (!allItems.length) throw new Error("В RSS не найдено ни одной записи");
-        
-        const TWO_YEARS_AGO = new Date();
-        TWO_YEARS_AGO.setFullYear(TWO_YEARS_AGO.getFullYear() - 2);
-        
-        items = allItems.filter(i => {
-            if (!i.pubDate) return true;
-            const d = new Date(i.pubDate);
-            return !isNaN(d.getTime()) && d >= TWO_YEARS_AGO;
-        }).slice(0, 50);
-        
-        if (!items.length) {
-            throw new Error(`Загружено ${allItems.length} записей, но все старше 2 лет`);
-        }
-        
-        console.log(`✅ Всего новостей: ${allItems.length}, после фильтра (2 года): ${items.length}`);
-        
+        // Читаем локальный JSON + cache-busting, чтобы получать свежую версию
+        const r = await fetch(`news.json?t=${Date.now()}`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        items = await r.json();
+
+        if (!items.length) throw new Error("Список новостей пуст");
+
+        console.log(`✅ Загружено новостей: ${items.length}`);
         idx = Math.floor(Math.random() * items.length);
         render();
-        
+
         if (timer) clearInterval(timer);
         timer = setInterval(render, 10000);
     } catch (e) {
@@ -255,7 +127,7 @@ async function load() {
 }
 
 load();
-setInterval(load, 5 * 60 * 1000);
+setInterval(load, 10 * 60 * 1000); // Перечитываем JSON каждые 10 минут
 </script>
 </body>
 </html>
