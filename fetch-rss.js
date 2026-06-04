@@ -2,7 +2,7 @@ const { XMLParser } = require('fast-xml-parser');
 const fs = require('fs');
 
 const RSS_URL = 'https://ria.ru/export/rss2/archive/index.xml';
-const MAX_ITEMS = 50;
+const MAX_ITEMS = 15;
 const YEARS_BACK = 2;
 
 function extractImage(html) {
