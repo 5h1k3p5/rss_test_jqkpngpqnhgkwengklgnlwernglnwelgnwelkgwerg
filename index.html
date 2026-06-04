@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Новости</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
 body {
     font-family: "Segoe UI", Arial, sans-serif;
     background: #fff;
@@ -14,45 +15,56 @@ body {
     justify-content: center;
     min-height: 100vh;
     overflow-x: hidden;
+    padding: 20px 0;
 }
+
 .wrapper {
     width: 90%;
-    max-width: 1400px;
+    max-width: 1200px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
+
 .news {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 30px;
+    width: 100%;
     opacity: 1;
     transition: opacity 0.6s ease;
-    width: 100%;
 }
 .news.fade { opacity: 0; }
-.left {
-    flex-shrink: 0;
-    width: 420px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
+
+/* ЛОГОТИП — всегда сверху, по центру */
 .logo {
     width: 100%;
-    height: 60px;
+    max-width: 420px;
+    height: 70px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #fff;
+    margin-bottom: 24px;
 }
 .logo img {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
 }
-.img {
+
+/* СТРОКА: картинка слева + текст справа */
+.content-row {
+    display: flex;
+    gap: 30px;
     width: 100%;
+    align-items: stretch;
+}
+
+/* Картинка новости */
+.img {
+    flex-shrink: 0;
+    width: 420px;
     height: 320px;
     border-radius: 12px;
     overflow: hidden;
@@ -65,121 +77,146 @@ body {
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 .img img {
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
+
+/* Текст: title сверху, description по центру, date снизу */
 .text {
-    flex:1;
-    min-width:0;
-    padding-left: 10px;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 4px 0;
 }
+
 .title {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 700;
     color: #1a1a1a;
     line-height: 1.3;
-    margin-bottom: 20px;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    /* Верхний блок — прижат к верху картинки */
 }
-.title a { color:inherit; text-decoration:none; }
-.title a:hover { color:#d32f2f; }
+.title a {
+    color: inherit;
+    text-decoration: none;
+}
+.title a:hover {
+    color: #d32f2f;
+}
+
 .description {
-    font-size: 20px;
+    font-size: 18px;
     color: #555;
-    line-height: 1.6;
-    margin-bottom: 20px;
+    line-height: 1.55;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    /* Средний блок */
+    flex: 1;
+    display: flex;
+    align-items: center;
 }
+
 .date {
-    font-size: 18px;
+    font-size: 16px;
     color: #888;
     font-weight: 500;
+    /* Нижний блок — прижат к низу картинки */
 }
-.loader { text-align:center; padding:80px 0; color:#888; font-size:24px; }
-.err { text-align:center; padding:60px 20px; color:#d32f2f; font-size:20px; }
+
+.loader {
+    text-align: center;
+    padding: 80px 0;
+    color: #888;
+    font-size: 24px;
+}
+.err {
+    text-align: center;
+    padding: 60px 20px;
+    color: #d32f2f;
+    font-size: 20px;
+}
+
+/* === АДАПТИВНОСТЬ === */
 
 /* Планшеты и небольшие десктопы */
 @media (max-width: 1200px) {
-    .left { width: 350px; }
-    .img { height: 260px; }
-    .title { font-size: 26px; }
-    .description { font-size: 18px; }
+    .logo { max-width: 350px; }
+    .img { width: 350px; height: 280px; }
+    .title { font-size: 24px; }
+    .description { font-size: 17px; }
+    .content-row { gap: 25px; }
 }
 
-/* Мобильные в портретной ориентации */
-@media (max-width: 900px) and (orientation: portrait) {
-    .news { flex-direction: column; gap: 15px; }
-    .left { width:100%; max-width:600px; }
-    .img { height: 280px; }
-    .text { padding-left: 0; padding-top: 10px; }
-    .title { font-size: 24px; margin-bottom: 12px; }
-    .description { font-size: 17px; margin-bottom: 12px; }
-    .date { font-size: 15px; }
-    .logo { height: 50px; }
-}
-
-/* 🎯 МОБИЛЬНЫЕ В ГОРИЗОНТАЛЬНОМ РЕЖИМЕ (landscape) */
-@media (orientation: landscape) and (max-height: 550px) {
-    body {
-        align-items: flex-start;
-        padding: 15px 0;
-        overflow-y: auto;
+/* Мобильные — портрет */
+@media (max-width: 768px) {
+    body { padding: 15px 0; }
+    .wrapper { width: 92%; }
+    .logo {
+        max-width: 280px;
+        height: 55px;
+        margin-bottom: 18px;
     }
-    .wrapper { width: 95%; }
-    .news {
-        flex-direction: row;
-        gap: 20px;
-        align-items: stretch;
-    }
-    .left {
-        width: 45%;
-        max-width: 320px;
-        gap: 8px;
-    }
-    .logo { height: 35px; }
+    .content-row { gap: 18px; }
     .img {
-        height: 0;
-        padding-bottom: 65%; /* соотношение сторон ~3:2 */
-        font-size: 50px;
-        border-radius: 8px;
-    }
-    .text {
-        padding-left: 0;
-        padding-top: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        width: 45%;
+        height: auto;
+        aspect-ratio: 4 / 3;
     }
     .title {
-        font-size: 19px;
+        font-size: 18px;
         line-height: 1.25;
-        margin-bottom: 10px;
     }
     .description {
-        font-size: 15px;
+        font-size: 14px;
         line-height: 1.45;
-        margin-bottom: 10px;
     }
     .date {
-        font-size: 14px;
-        margin-top: auto;
+        font-size: 13px;
     }
 }
 
-/* Очень маленькие экраны в landscape (например, старые телефоны, высота <400px) */
-@media (orientation: landscape) and (max-height: 400px) {
-    body { padding: 8px 0; }
-    .news { gap: 12px; }
-    .left { width: 40%; max-width: 260px; gap: 6px; }
-    .logo { height: 28px; }
-    .title { font-size: 16px; margin-bottom: 6px; }
-    .description { font-size: 13px; line-height: 1.35; margin-bottom: 6px; }
+/* Мобильные в ландшафтном режиме */
+@media (max-width: 768px) and (orientation: landscape) {
+    body { padding: 10px 0; }
+    .logo {
+        max-width: 240px;
+        height: 45px;
+        margin-bottom: 12px;
+    }
+    .content-row { gap: 15px; }
+    .img {
+        width: 42%;
+        aspect-ratio: 16 / 10;
+    }
+    .title {
+        font-size: 16px;
+        line-height: 1.2;
+    }
+    .description {
+        font-size: 13px;
+        line-height: 1.4;
+    }
+    .date {
+        font-size: 12px;
+    }
+}
+
+/* Очень маленькие телефоны (ширина < 400px) */
+@media (max-width: 400px) {
+    .img {
+        width: 40%;
+    }
+    .title { font-size: 16px; }
+    .description { font-size: 13px; }
     .date { font-size: 12px; }
-    .img { border-radius: 6px; }
+    .content-row { gap: 12px; }
+    .logo { margin-bottom: 14px; }
 }
 </style>
 </head>
@@ -194,12 +231,11 @@ let items = [];
 let idx = 0;
 let timer = null;
 
-// Определяем, в landscape ли мы — для адаптивной длины описания
-function isLandscape() {
-    return window.matchMedia('(orientation: landscape) and (max-height: 550px)').matches;
+function isSmallScreen() {
+    return window.matchMedia('(max-width: 768px)').matches;
 }
-function isSmallLandscape() {
-    return window.matchMedia('(orientation: landscape) and (max-height: 400px)').matches;
+function isLandscapeMobile() {
+    return window.matchMedia('(max-width: 768px) and (orientation: landscape)').matches;
 }
 
 function smartTruncate(text, maxLength) {
@@ -226,22 +262,22 @@ function fmtDate(s) {
     const d = new Date(s);
     if (isNaN(d.getTime())) return "";
     return d.toLocaleString("ru-RU", {
-        day:"numeric", month:"long", year:"numeric",
-        hour:"2-digit", minute:"2-digit"
+        day: "numeric", month: "long", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
     });
 }
 
 function render() {
     if (!items.length) return;
     const it = items[idx];
-    
-    // Адаптивная длина описания в зависимости от ориентации
+
+    // Адаптивная длина описания
     let descLength = 320;
-    if (isSmallLandscape()) descLength = 150;
-    else if (isLandscape()) descLength = 220;
-    
+    if (isLandscapeMobile()) descLength = 150;
+    else if (isSmallScreen()) descLength = 200;
+
     const desc = smartTruncate(stripHtml(it.description || ""), descLength);
-    const title = it.title || ""; // заголовок выводится целиком
+    const title = it.title || ""; // целиком, без обрезки
 
     const box = document.getElementById("box");
     box.classList.add("fade");
@@ -249,18 +285,22 @@ function render() {
     setTimeout(() => {
         box.innerHTML = `
         <div class="news">
-            <div class="left">
-                <div class="logo"><img src="${LOGO}" alt="Логотип"></div>
+            <!-- Логотип сверху, по центру -->
+            <div class="logo">
+                <img src="${LOGO}" alt="Логотип">
+            </div>
+            <!-- Строка: картинка + текст -->
+            <div class="content-row">
                 <div class="img">
                     ${it.image
                         ? `<img src="${it.image}" onerror="this.style.display='none'; this.parentElement.innerHTML='📰';">`
                         : "📰"}
                 </div>
-            </div>
-            <div class="text">
-                <div class="title"><a href="${it.link}" target="_blank">${title}</a></div>
-                <div class="description">${desc}</div>
-                <div class="date">🕐 ${fmtDate(it.pubDate)}</div>
+                <div class="text">
+                    <div class="title"><a href="${it.link}" target="_blank">${title}</a></div>
+                    <div class="description">${desc}</div>
+                    <div class="date">🕐 ${fmtDate(it.pubDate)}</div>
+                </div>
             </div>
         </div>`;
         box.classList.remove("fade");
@@ -284,18 +324,15 @@ async function load() {
     }
 }
 
-// Перерисовываем при смене ориентации устройства
-window.addEventListener('orientationchange', () => {
-    setTimeout(render, 100);
-});
+// Перерисовка при смене ориентации
+window.addEventListener('orientationchange', () => setTimeout(render, 100));
 window.addEventListener('resize', () => {
-    // Дебаунс, чтобы не перерисовывать слишком часто
     clearTimeout(window._resizeTimer);
     window._resizeTimer = setTimeout(render, 200);
 });
 
 load();
-setInterval(load, 30 * 60 * 1000); // Перечитываем JSON каждые 30 минут
+setInterval(load, 30 * 60 * 1000);
 </script>
 </body>
 </html>
