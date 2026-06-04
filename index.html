@@ -6,25 +6,181 @@
 <title>Новости</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: "Segoe UI", Arial, sans-serif; background: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
-.wrapper { width: 90%; max-width: 1400px; display: flex; align-items: center; justify-content: center; }
-.news { display: flex; align-items: center; gap: 30px; opacity: 1; transition: opacity 0.6s ease; width: 100%; }
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+.wrapper {
+    width: 90%;
+    max-width: 1400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.news {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    opacity: 1;
+    transition: opacity 0.6s ease;
+    width: 100%;
+}
 .news.fade { opacity: 0; }
-.left { flex-shrink: 0; width: 420px; display: flex; flex-direction: column; gap: 16px; }
-.logo { width: 100%; height: 60px; display: flex; align-items: center; justify-content: center; background: #fff; }
-.logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
-.img { width: 100%; height: 320px; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 80px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-.img img { width:100%; height:100%; object-fit:cover; display:block; }
-.text { flex:1; min-width:0; padding-left: 10px; }
-.title { font-size: 32px; font-weight: 700; color: #1a1a1a; line-height: 1.3; margin-bottom: 20px; }
+.left {
+    flex-shrink: 0;
+    width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.logo {
+    width: 100%;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+}
+.logo img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+.img {
+    width: 100%;
+    height: 320px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 80px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.img img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+}
+.text {
+    flex:1;
+    min-width:0;
+    padding-left: 10px;
+}
+.title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.3;
+    margin-bottom: 20px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
 .title a { color:inherit; text-decoration:none; }
 .title a:hover { color:#d32f2f; }
-.description { font-size: 20px; color: #555; line-height: 1.6; margin-bottom: 20px; }
-.date { font-size: 18px; color: #888; font-weight: 500; }
+.description {
+    font-size: 20px;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+.date {
+    font-size: 18px;
+    color: #888;
+    font-weight: 500;
+}
 .loader { text-align:center; padding:80px 0; color:#888; font-size:24px; }
 .err { text-align:center; padding:60px 20px; color:#d32f2f; font-size:20px; }
-@media (max-width: 1200px) { .left { width: 350px; } .img { height: 260px; } .title { font-size: 26px; } .description { font-size: 18px; } }
-@media (max-width: 900px) { .news { flex-direction: column; } .left { width:100%; max-width:600px; } .img { height: 300px; } .text { padding-left: 0; padding-top: 10px; } .title { font-size: 24px; } }
+
+/* Планшеты и небольшие десктопы */
+@media (max-width: 1200px) {
+    .left { width: 350px; }
+    .img { height: 260px; }
+    .title { font-size: 26px; }
+    .description { font-size: 18px; }
+}
+
+/* Мобильные в портретной ориентации */
+@media (max-width: 900px) and (orientation: portrait) {
+    .news { flex-direction: column; gap: 15px; }
+    .left { width:100%; max-width:600px; }
+    .img { height: 280px; }
+    .text { padding-left: 0; padding-top: 10px; }
+    .title { font-size: 24px; margin-bottom: 12px; }
+    .description { font-size: 17px; margin-bottom: 12px; }
+    .date { font-size: 15px; }
+    .logo { height: 50px; }
+}
+
+/* 🎯 МОБИЛЬНЫЕ В ГОРИЗОНТАЛЬНОМ РЕЖИМЕ (landscape) */
+@media (orientation: landscape) and (max-height: 550px) {
+    body {
+        align-items: flex-start;
+        padding: 15px 0;
+        overflow-y: auto;
+    }
+    .wrapper { width: 95%; }
+    .news {
+        flex-direction: row;
+        gap: 20px;
+        align-items: stretch;
+    }
+    .left {
+        width: 45%;
+        max-width: 320px;
+        gap: 8px;
+    }
+    .logo { height: 35px; }
+    .img {
+        height: 0;
+        padding-bottom: 65%; /* соотношение сторон ~3:2 */
+        font-size: 50px;
+        border-radius: 8px;
+    }
+    .text {
+        padding-left: 0;
+        padding-top: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .title {
+        font-size: 19px;
+        line-height: 1.25;
+        margin-bottom: 10px;
+    }
+    .description {
+        font-size: 15px;
+        line-height: 1.45;
+        margin-bottom: 10px;
+    }
+    .date {
+        font-size: 14px;
+        margin-top: auto;
+    }
+}
+
+/* Очень маленькие экраны в landscape (например, старые телефоны, высота <400px) */
+@media (orientation: landscape) and (max-height: 400px) {
+    body { padding: 8px 0; }
+    .news { gap: 12px; }
+    .left { width: 40%; max-width: 260px; gap: 6px; }
+    .logo { height: 28px; }
+    .title { font-size: 16px; margin-bottom: 6px; }
+    .description { font-size: 13px; line-height: 1.35; margin-bottom: 6px; }
+    .date { font-size: 12px; }
+    .img { border-radius: 6px; }
+}
 </style>
 </head>
 <body>
@@ -32,10 +188,19 @@ body { font-family: "Segoe UI", Arial, sans-serif; background: #fff; display: fl
     <div id="box"><div class="loader">Загрузка новостей...</div></div>
 </div>
 <script>
-const LOGO = "https://xn--c1acbl2abdlkab1og.xn--p1ai/i/logo/logo-ria.svg?2";
+const LOGO = "https://optim.tildacdn.com/tild3163-3431-4435-b830-363730373233/-/resize/343x/-/format/webp/isb_logo_rus.png.webp";
+
 let items = [];
 let idx = 0;
 let timer = null;
+
+// Определяем, в landscape ли мы — для адаптивной длины описания
+function isLandscape() {
+    return window.matchMedia('(orientation: landscape) and (max-height: 550px)').matches;
+}
+function isSmallLandscape() {
+    return window.matchMedia('(orientation: landscape) and (max-height: 400px)').matches;
+}
 
 function smartTruncate(text, maxLength) {
     if (!text || text.length <= maxLength) return text;
@@ -49,24 +214,38 @@ function smartTruncate(text, maxLength) {
     if (spaceIndex > maxLength * 0.6) return text.substring(0, spaceIndex) + '...';
     return text.substring(0, maxLength) + '...';
 }
+
 function stripHtml(html) {
     const tmp = document.createElement("div");
     tmp.innerHTML = html;
     return tmp.textContent || tmp.innerText || "";
 }
+
 function fmtDate(s) {
     if (!s) return "";
     const d = new Date(s);
     if (isNaN(d.getTime())) return "";
-    return d.toLocaleString("ru-RU", { day:"numeric", month:"long", year:"numeric", hour:"2-digit", minute:"2-digit" });
+    return d.toLocaleString("ru-RU", {
+        day:"numeric", month:"long", year:"numeric",
+        hour:"2-digit", minute:"2-digit"
+    });
 }
+
 function render() {
     if (!items.length) return;
     const it = items[idx];
-    const desc = smartTruncate(stripHtml(it.description || ""), 320);
-    const title = smartTruncate(it.title || "", 150);
+    
+    // Адаптивная длина описания в зависимости от ориентации
+    let descLength = 320;
+    if (isSmallLandscape()) descLength = 150;
+    else if (isLandscape()) descLength = 220;
+    
+    const desc = smartTruncate(stripHtml(it.description || ""), descLength);
+    const title = it.title || ""; // заголовок выводится целиком
+
     const box = document.getElementById("box");
     box.classList.add("fade");
+
     setTimeout(() => {
         box.innerHTML = `
         <div class="news">
@@ -88,6 +267,7 @@ function render() {
         idx = (idx + 1) % items.length;
     }, 600);
 }
+
 async function load() {
     try {
         const r = await fetch(`news.json?t=${Date.now()}`);
@@ -98,13 +278,24 @@ async function load() {
         idx = Math.floor(Math.random() * items.length);
         render();
         if (timer) clearInterval(timer);
-        timer = setInterval(render, 30000);
+        timer = setInterval(render, 15000);
     } catch (e) {
         document.getElementById("box").innerHTML = `<div class="err">⚠️ ${e.message}</div>`;
     }
 }
+
+// Перерисовываем при смене ориентации устройства
+window.addEventListener('orientationchange', () => {
+    setTimeout(render, 100);
+});
+window.addEventListener('resize', () => {
+    // Дебаунс, чтобы не перерисовывать слишком часто
+    clearTimeout(window._resizeTimer);
+    window._resizeTimer = setTimeout(render, 200);
+});
+
 load();
-setInterval(load, 10 * 60 * 1000);
+setInterval(load, 30 * 60 * 1000); // Перечитываем JSON каждые 30 минут
 </script>
 </body>
 </html>
