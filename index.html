@@ -33,31 +33,28 @@ body {
 }
 .news.fade { opacity: 0; }
 
-/* СТРОКА: левая колонка (лого+картинка) + текст справа */
 .content-row {
     display: flex;
     gap: 30px;
     width: 100%;
     align-items: stretch;
-    justify-content: center; /* Центрируем всю композицию */
+    justify-content: center;
 }
 
-/* ЛЕВАЯ КОЛОНКА: логотип + картинка */
 .left {
     flex-shrink: 0;
     width: 420px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 16px; /* Отступ между логотипом и картинкой */
 }
 
-/* ЛОГОТИП — прижат к левому краю, точно над картинкой */
 .logo {
     width: 100%;
-    height: 70px;
+    height: 70px; /* Высота логотипа на десктопе */
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Прижат к левому краю */
+    justify-content: flex-start;
     background: #fff;
 }
 .logo img {
@@ -66,7 +63,6 @@ body {
     object-fit: contain;
 }
 
-/* Картинка новости */
 .img {
     width: 100%;
     height: 320px;
@@ -87,7 +83,7 @@ body {
     display: block;
 }
 
-/* Текст: title сверху, description по центру, date снизу */
+/* ТЕКСТОВЫЙ БЛОК */
 .text {
     flex: 1;
     min-width: 0;
@@ -95,7 +91,8 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 4px 0;
+    /* КЛЮЧЕВОЕ: отступ сверху = высота логотипа + gap, чтобы текст начинался на уровне картинки */
+    padding-top: calc(70px + 16px);
 }
 
 .title {
@@ -151,6 +148,7 @@ body {
     .left { width: 350px; }
     .logo { height: 60px; }
     .img { height: 280px; }
+    .text { padding-top: calc(60px + 16px); } /* 76px */
     .title { font-size: 24px; }
     .description { font-size: 17px; }
     .content-row { gap: 25px; }
@@ -161,61 +159,36 @@ body {
     body { padding: 15px 0; }
     .wrapper { width: 92%; }
     .content-row { gap: 18px; }
-    .left {
-        width: 45%;
-    }
-    .logo {
-        height: 55px;
-    }
+    .left { width: 45%; }
+    .logo { height: 55px; }
+    .text { padding-top: calc(55px + 16px); } /* 71px */
     .img {
         height: auto;
         aspect-ratio: 4 / 3;
     }
-    .title {
-        font-size: 18px;
-        line-height: 1.25;
-    }
-    .description {
-        font-size: 14px;
-        line-height: 1.45;
-    }
-    .date {
-        font-size: 13px;
-    }
+    .title { font-size: 18px; line-height: 1.25; }
+    .description { font-size: 14px; line-height: 1.45; }
+    .date { font-size: 13px; }
 }
 
 /* Мобильные в ландшафтном режиме */
 @media (max-width: 768px) and (orientation: landscape) {
     body { padding: 10px 0; }
     .content-row { gap: 15px; }
-    .left {
-        width: 42%;
-    }
-    .logo {
-        height: 45px;
-    }
-    .img {
-        aspect-ratio: 16 / 10;
-    }
-    .title {
-        font-size: 16px;
-        line-height: 1.2;
-    }
-    .description {
-        font-size: 13px;
-        line-height: 1.4;
-    }
-    .date {
-        font-size: 12px;
-    }
+    .left { width: 42%; }
+    .logo { height: 45px; }
+    .text { padding-top: calc(45px + 16px); } /* 61px */
+    .img { aspect-ratio: 16 / 10; }
+    .title { font-size: 16px; line-height: 1.2; }
+    .description { font-size: 13px; line-height: 1.4; }
+    .date { font-size: 12px; }
 }
 
 /* Очень маленькие телефоны (ширина < 400px) */
 @media (max-width: 400px) {
-    .left {
-        width: 40%;
-    }
+    .left { width: 40%; }
     .logo { height: 40px; }
+    .text { padding-top: calc(40px + 16px); } /* 56px */
     .title { font-size: 16px; }
     .description { font-size: 13px; }
     .date { font-size: 12px; }
@@ -274,13 +247,12 @@ function render() {
     if (!items.length) return;
     const it = items[idx];
 
-    // Адаптивная длина описания
     let descLength = 320;
     if (isLandscapeMobile()) descLength = 150;
     else if (isSmallScreen()) descLength = 200;
 
     const desc = smartTruncate(stripHtml(it.description || ""), descLength);
-    const title = it.title || ""; // целиком, без обрезки
+    const title = it.title || "";
 
     const box = document.getElementById("box");
     box.classList.add("fade");
@@ -289,7 +261,6 @@ function render() {
         box.innerHTML = `
         <div class="news">
             <div class="content-row">
-                <!-- Левая колонка: логотип + картинка -->
                 <div class="left">
                     <div class="logo">
                         <img src="${LOGO}" alt="Логотип">
@@ -300,7 +271,6 @@ function render() {
                             : "📰"}
                     </div>
                 </div>
-                <!-- Текст справа -->
                 <div class="text">
                     <div class="title"><a href="${it.link}" target="_blank">${title}</a></div>
                     <div class="description">${desc}</div>
@@ -329,7 +299,6 @@ async function load() {
     }
 }
 
-// Перерисовка при смене ориентации
 window.addEventListener('orientationchange', () => setTimeout(render, 100));
 window.addEventListener('resize', () => {
     clearTimeout(window._resizeTimer);
