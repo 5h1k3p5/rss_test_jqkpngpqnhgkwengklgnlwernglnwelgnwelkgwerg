@@ -21,9 +21,6 @@ body {
 .wrapper {
     width: 90%;
     max-width: 1200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .news {
@@ -36,16 +33,32 @@ body {
 }
 .news.fade { opacity: 0; }
 
-/* ЛОГОТИП — всегда сверху, по центру */
+/* СТРОКА: левая колонка (лого+картинка) + текст справа */
+.content-row {
+    display: flex;
+    gap: 30px;
+    width: 100%;
+    align-items: stretch;
+    justify-content: center; /* Центрируем всю композицию */
+}
+
+/* ЛЕВАЯ КОЛОНКА: логотип + картинка */
+.left {
+    flex-shrink: 0;
+    width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ЛОГОТИП — прижат к левому краю, точно над картинкой */
 .logo {
     width: 100%;
-    max-width: 420px;
     height: 70px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start; /* Прижат к левому краю */
     background: #fff;
-    margin-bottom: 24px;
 }
 .logo img {
     max-width: 100%;
@@ -53,18 +66,9 @@ body {
     object-fit: contain;
 }
 
-/* СТРОКА: картинка слева + текст справа */
-.content-row {
-    display: flex;
-    gap: 30px;
-    width: 100%;
-    align-items: stretch;
-}
-
 /* Картинка новости */
 .img {
-    flex-shrink: 0;
-    width: 420px;
+    width: 100%;
     height: 320px;
     border-radius: 12px;
     overflow: hidden;
@@ -87,6 +91,7 @@ body {
 .text {
     flex: 1;
     min-width: 0;
+    max-width: 600px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -100,7 +105,6 @@ body {
     line-height: 1.3;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    /* Верхний блок — прижат к верху картинки */
 }
 .title a {
     color: inherit;
@@ -116,7 +120,6 @@ body {
     line-height: 1.55;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    /* Средний блок */
     flex: 1;
     display: flex;
     align-items: center;
@@ -126,7 +129,6 @@ body {
     font-size: 16px;
     color: #888;
     font-weight: 500;
-    /* Нижний блок — прижат к низу картинки */
 }
 
 .loader {
@@ -146,8 +148,9 @@ body {
 
 /* Планшеты и небольшие десктопы */
 @media (max-width: 1200px) {
-    .logo { max-width: 350px; }
-    .img { width: 350px; height: 280px; }
+    .left { width: 350px; }
+    .logo { height: 60px; }
+    .img { height: 280px; }
     .title { font-size: 24px; }
     .description { font-size: 17px; }
     .content-row { gap: 25px; }
@@ -157,14 +160,14 @@ body {
 @media (max-width: 768px) {
     body { padding: 15px 0; }
     .wrapper { width: 92%; }
-    .logo {
-        max-width: 280px;
-        height: 55px;
-        margin-bottom: 18px;
-    }
     .content-row { gap: 18px; }
-    .img {
+    .left {
         width: 45%;
+    }
+    .logo {
+        height: 55px;
+    }
+    .img {
         height: auto;
         aspect-ratio: 4 / 3;
     }
@@ -184,14 +187,14 @@ body {
 /* Мобильные в ландшафтном режиме */
 @media (max-width: 768px) and (orientation: landscape) {
     body { padding: 10px 0; }
-    .logo {
-        max-width: 240px;
-        height: 45px;
-        margin-bottom: 12px;
-    }
     .content-row { gap: 15px; }
-    .img {
+    .left {
         width: 42%;
+    }
+    .logo {
+        height: 45px;
+    }
+    .img {
         aspect-ratio: 16 / 10;
     }
     .title {
@@ -209,14 +212,14 @@ body {
 
 /* Очень маленькие телефоны (ширина < 400px) */
 @media (max-width: 400px) {
-    .img {
+    .left {
         width: 40%;
     }
+    .logo { height: 40px; }
     .title { font-size: 16px; }
     .description { font-size: 13px; }
     .date { font-size: 12px; }
     .content-row { gap: 12px; }
-    .logo { margin-bottom: 14px; }
 }
 </style>
 </head>
@@ -285,17 +288,19 @@ function render() {
     setTimeout(() => {
         box.innerHTML = `
         <div class="news">
-            <!-- Логотип сверху, по центру -->
-            <div class="logo">
-                <img src="${LOGO}" alt="Логотип">
-            </div>
-            <!-- Строка: картинка + текст -->
             <div class="content-row">
-                <div class="img">
-                    ${it.image
-                        ? `<img src="${it.image}" onerror="this.style.display='none'; this.parentElement.innerHTML='📰';">`
-                        : "📰"}
+                <!-- Левая колонка: логотип + картинка -->
+                <div class="left">
+                    <div class="logo">
+                        <img src="${LOGO}" alt="Логотип">
+                    </div>
+                    <div class="img">
+                        ${it.image
+                            ? `<img src="${it.image}" onerror="this.style.display='none'; this.parentElement.innerHTML='📰';">`
+                            : "📰"}
+                    </div>
                 </div>
+                <!-- Текст справа -->
                 <div class="text">
                     <div class="title"><a href="${it.link}" target="_blank">${title}</a></div>
                     <div class="description">${desc}</div>
